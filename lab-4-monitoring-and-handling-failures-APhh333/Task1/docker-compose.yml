@@ -1,0 +1,153 @@
+version: "3.10"
+
+services:
+  # --- DATADOG AGENT ---
+  datadog:
+    image: gcr.io/datadoghq/agent:7
+    environment:
+      - DD_API_KEY=5c20c10b4e76e15fbaad287dc6785fe1  
+      - DD_SITE=us5.datadoghq.com    
+      - DD_APM_ENABLED=true       # Вмикаємо трейсінг (для пункту 1b)
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    ports:
+      - "8126:8126"  # Порт для APM (трейсінга)
+
+  coordinator:
+    build: ./coordinator
+    ports:
+      - "8000:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      # Додаємо налаштування для Datadog APM
+      - DD_AGENT_HOST=datadog
+      - DD_SERVICE=coordinator
+      - DD_ENV=lab4
+      - DD_TRACE_DEBUG=true
+      - DD_TRACE_AGENT_PORT=8126
+    depends_on:
+      - datadog
+
+  # --- SHARD 1 ---
+  shard1-leader:
+    build: ./shard
+    ports:
+      - "8001:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1-leader
+      - REPLICA_ROLE=leader
+      - SHARD_GROUP=shard1-group
+      - FOLLOWER_URLS=http://shard1-follower1:8000,http://shard1-follower2:8000
+      # Додаємо налаштування для Datadog APM
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shard-service # Щоб групувати всі шарди як один сервіс
+      - DD_ENV=lab4
+    depends_on:
+      - coordinator
+      - datadog
+
+  shard1-follower1:
+    build: ./shard
+    ports:
+      - "9001:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1-follower1
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard1-group
+      - LEADER_URL=http://shard1-leader:8000
+      # Datadog
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shard-service
+      - DD_ENV=lab4
+    depends_on:
+      - coordinator
+      - shard1-leader
+      - datadog
+
+  shard1-follower2:
+    build: ./shard
+    ports:
+      - "9002:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1-follower2
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard1-group
+      - LEADER_URL=http://shard1-leader:8000
+      # Datadog
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shard-service
+      - DD_ENV=lab4
+    depends_on:
+      - coordinator
+      - shard1-leader
+      - datadog
+
+  # --- SHARD 2 ---
+  shard2-leader:
+    build: ./shard
+    ports:
+      - "8002:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2-leader
+      - REPLICA_ROLE=leader
+      - SHARD_GROUP=shard2-group
+      - FOLLOWER_URLS=http://shard2-follower1:8000,http://shard2-follower2:8000
+      # Datadog
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shard-service
+      - DD_ENV=lab4
+    depends_on:
+      - coordinator
+      - datadog
+
+  shard2-follower1:
+    build: ./shard
+    ports:
+      - "9003:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2-follower1
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard2-group
+      - LEADER_URL=http://shard2-leader:8000
+      # Datadog
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shard-service
+      - DD_ENV=lab4
+    depends_on:
+      - coordinator
+      - shard2-leader
+      - datadog
+
+  shard2-follower2:
+    build: ./shard
+    ports:
+      - "9004:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2-follower2
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard2-group
+      - LEADER_URL=http://shard2-leader:8000
+      # Datadog
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shard-service
+      - DD_ENV=lab4
+    depends_on:
+      - coordinator
+      - shard2-leader
+      - datadog
