@@ -1,0 +1,31 @@
+version: "3.10"
+
+services:
+  coordinator:
+    build: ./coordinator
+    ports:
+      - "8000:8000"
+
+  shard1:
+    build: ./shard
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1
+    depends_on:
+      - coordinator
+    command: >
+      sh -c "sleep 5 && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8001:8000"
+
+  shard2:
+    build: ./shard
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2
+    depends_on:
+      - coordinator
+    command: >
+      sh -c "sleep 5 && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8002:8000"
