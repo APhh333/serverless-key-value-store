@@ -1,0 +1,97 @@
+version: "3.10"
+
+services:
+  coordinator:
+    build: ./coordinator
+    ports:
+      - "8000:8000"
+    # Додаємо, щоб Координатор знав сам себе (для реєстрації)
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+
+  # --- SHARD 1 REPLICA SET (N=3) ---
+  shard1-leader:
+    build: ./shard
+    ports:
+      - "8001:8000" # Лідер доступний на 8001
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1-leader # Унікальне ім'я
+      - REPLICA_ROLE=leader      # Його роль
+      - SHARD_GROUP=shard1-group # Назва його групи
+      # Лідер знає своїх фоловерів для "fan-out"
+      - FOLLOWER_URLS=http://shard1-follower1:8000,http://shard1-follower2:8000
+    depends_on:
+      - coordinator
+    # 'command' з 'sleep' тут не потрібен, бо логіку синхронізації
+    # ми перенесемо в код на @app.on_event("startup")
+
+  shard1-follower1:
+    build: ./shard
+    ports:
+      - "9001:8000" # Фоловери на інших портах (для читання)
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1-follower1
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard1-group
+      - LEADER_URL=http://shard1-leader:8000 # Знає свого лідера
+    depends_on:
+      - coordinator
+      - shard1-leader
+
+  shard1-follower2:
+    build: ./shard
+    ports:
+      - "9002:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard1-follower2
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard1-group
+      - LEADER_URL=http://shard1-leader:8000
+    depends_on:
+      - coordinator
+      - shard1-leader
+
+  # --- SHARD 2 REPLICA SET (N=3) (Аналогічно) ---
+  shard2-leader:
+    build: ./shard
+    ports:
+      - "8002:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2-leader
+      - REPLICA_ROLE=leader
+      - SHARD_GROUP=shard2-group
+      - FOLLOWER_URLS=http://shard2-follower1:8000,http://shard2-follower2:8000
+    depends_on:
+      - coordinator
+
+  shard2-follower1:
+    build: ./shard
+    ports:
+      - "9003:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2-follower1
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard2-group
+      - LEADER_URL=http://shard2-leader:8000
+    depends_on:
+      - coordinator
+      - shard2-leader
+
+  shard2-follower2:
+    build: ./shard
+    ports:
+      - "9004:8000"
+    environment:
+      - COORDINATOR_URL=http://coordinator:8000
+      - SHARD_NAME=shard2-follower2
+      - REPLICA_ROLE=follower
+      - SHARD_GROUP=shard2-group
+      - LEADER_URL=http://shard2-leader:8000
+    depends_on:
+      - coordinator
+      - shard2-leader
