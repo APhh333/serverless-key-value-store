@@ -1,0 +1,100 @@
+---
+Metadata:
+  AWSToolsMetrics:
+    IaC_Generator: "arn:aws:cloudformation:eu-central-1:020211326286:generatedTemplate/dff07f5a-3121-4ac8-9635-7d6f967f832e"
+Resources:
+  IAMRoleAWSReservedSSOViewOnlyAccesse301fbac55c0025b:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::Role"
+    DeletionPolicy: "Retain"
+    Properties:
+      Path: "/aws-reserved/sso.amazonaws.com/eu-central-1/"
+      ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"
+      MaxSessionDuration: 43200
+      RoleName: "AWSReservedSSO_ViewOnlyAccess_e301fbac55c0025b"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Condition:
+            StringEquals:
+              SAML:aud: "https://signin.aws.amazon.com/saml"
+          Action:
+          - "sts:AssumeRoleWithSAML"
+          - "sts:TagSession"
+          Effect: "Allow"
+          Principal:
+            Federated: "arn:aws:iam::020211326286:saml-provider/AWSSSO_3b4515e5ec18bae0_DO_NOT_DELETE"
+  IAMManagedPolicyPolicyViewONLYCustom:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Retain"
+    Properties:
+      ManagedPolicyName: "View_ONLY_Custom"
+      Path: "/"
+      Description: ""
+      Groups: []
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Resource: "*"
+          Action:
+          - "cloudformation:ListExports"
+          - "cloudformation:ListResourceScanRelatedResources"
+          - "cloudformation:ListStackInstances"
+          - "cloudformation:DescribeChangeSetHooks"
+          - "cloudformation:DescribeStackResource"
+          - "cloudformation:ListTypeRegistrations"
+          - "cloudformation:ListStackSetOperationResults"
+          - "cloudformation:ListStackRefactors"
+          - "cloudformation:DescribeStackEvents"
+          - "cloudformation:ListStackSetAutoDeploymentTargets"
+          - "cloudformation:BatchDescribeTypeConfigurations"
+          - "cloudformation:DescribeChangeSet"
+          - "cloudformation:ListStackResources"
+          - "cloudformation:DescribeStackInstance"
+          - "cloudformation:ListResourceRequests"
+          - "cloudformation:DescribeStackResources"
+          - "cloudformation:ListGeneratedTemplates"
+          - "cloudformation:DescribeStacks"
+          - "cloudformation:GetGeneratedTemplate"
+          - "cloudformation:ListStackInstanceResourceDrifts"
+          - "cloudformation:GetResource"
+          - "cloudformation:DescribeStackResourceDrifts"
+          - "cloudformation:GetStackPolicy"
+          - "cloudformation:GetTemplate"
+          - "cloudformation:DescribeGeneratedTemplate"
+          - "cloudformation:ValidateTemplate"
+          - "cloudformation:ListTypeVersions"
+          - "cloudformation:DetectStackSetDrift"
+          - "cloudformation:DescribeStackDriftDetectionStatus"
+          - "cloudformation:ListStackRefactorActions"
+          - "cloudformation:DetectStackDrift"
+          - "cloudformation:DescribeOrganizationsAccess"
+          - "cloudformation:ListStackSetOperations"
+          - "cloudformation:ListTypes"
+          - "cloudformation:DescribeStackRefactor"
+          - "cloudformation:ListResourceScanResources"
+          - "cloudformation:EstimateTemplateCost"
+          - "cloudformation:DetectStackResourceDrift"
+          - "cloudformation:ListHookResults"
+          - "cloudformation:DescribeStackSetOperation"
+          - "cloudformation:DescribeAccountLimits"
+          - "cloudformation:ListResourceScans"
+          - "cloudformation:ListStacks"
+          - "cloudformation:DescribeType"
+          - "cloudformation:ListAllHookResults"
+          - "cloudformation:ListImports"
+          - "cloudformation:GetResourceRequestStatus"
+          - "cloudformation:DescribePublisher"
+          - "cloudformation:DescribeTypeRegistration"
+          - "cloudformation:GetTemplateSummary"
+          - "cloudformation:ListResources"
+          - "cloudformation:DescribeStackSet"
+          - "cloudformation:ListStackSets"
+          - "cloudformation:DescribeResourceScan"
+          - "cloudformation:ListChangeSets"
+          Effect: "Allow"
+          Sid: "VisualEditor0"
+      Roles: []
+      Users: []
